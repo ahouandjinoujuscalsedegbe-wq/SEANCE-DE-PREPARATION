@@ -1,0 +1,891 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Affiche Soirée de Préparation — Semaine de l'Évangile (CUA)</title>
+   <!-- Chargement de Tailwind CSS pour une mise en page fluide et responsive -->
+   <script src="https://cdn.tailwindcss.com"></script>
+   <!-- Polices typographiques (Inter, Montserrat, Playfair Display) -->
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+   <!-- Icônes Lucide -->
+   <script src="https://unpkg.com/lucide@latest"></script>
+   <script>
+       tailwind.config = {
+           theme: {
+               extend: {
+                   fontFamily: {
+                       sans: ['Inter', 'sans-serif'],
+                       display: ['Montserrat', 'sans-serif'],
+                       serif: ['Playfair Display', 'serif'],
+                   },
+                   colors: {
+                       navyDeep: '#091939',
+                       navyMid: '#0B1E44',
+                       ochreGold: '#D89B2B',
+                       ochreBright: '#DF9F28',
+                   }
+               }
+           }
+       }
+   </script>
+   <style>
+       /* Assure un rendu net du canvas 1080x1080 dans un conteneur carré responsive */
+       #posterCanvas {
+           width: 100%;
+           height: 100%;
+           display: block;
+       }
+   </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+   <!-- Barre de notification non bloquante (remplace alert()) -->
+   <div id="toastBox" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300">
+       <div class="bg-navyDeep text-white px-5 py-3 rounded-2xl shadow-2xl border border-ochreGold/60 flex items-center gap-2.5 text-xs sm:text-sm font-medium">
+           <i data-lucide="check-circle-2" class="w-4 h-4 text-ochreBright shrink-0"></i>
+           <span id="toastText">Action réussie</span>
+       </div>
+   </div>
+
+   <!-- En-tête de l'application -->
+   <header class="bg-navyDeep text-white shadow-md sticky top-0 z-30 border-b border-ochreGold/30">
+       <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+           <div class="flex items-center gap-3">
+               <div class="w-10 h-10 rounded-xl bg-ochreGold/15 border border-ochreGold flex items-center justify-center text-ochreBright shrink-0">
+                   <i data-lucide="megaphone" class="w-5 h-5"></i>
+               </div>
+               <div>
+                   <h1 class="font-display font-extrabold text-sm sm:text-base tracking-wide uppercase leading-tight">
+                       Affiche Mobilisation — Jeudi Soir
+                   </h1>
+                   <p class="text-[11px] sm:text-xs text-slate-300">
+                       Semaine de l'Évangile • Centre Universitaire Apostolique (CUA)
+                   </p>
+               </div>
+           </div>
+
+           <div class="flex items-center gap-2">
+               <button id="resetAllBtn" type="button" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                   <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-ochreBright"></i>
+                   <span>Réinitialiser</span>
+               </button>
+               <button id="downloadHeaderBtn" type="button" class="px-4 py-2 rounded-xl bg-ochreBright hover:bg-amber-400 text-navyDeep font-display font-extrabold text-xs flex items-center gap-1.5 shadow transition">
+                   <i data-lucide="download" class="w-4 h-4"></i>
+                   <span>Télécharger (PNG)</span>
+               </button>
+           </div>
+       </div>
+   </header>
+
+   <!-- Contenu principal : Éditeur à gauche + Aperçu 1:1 à droite -->
+   <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:py-8">
+       <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+
+           <!-- COLONNE GAUCHE : Formulaire d'édition en temps réel (7 colonnes) -->
+           <section class="lg:col-span-7 space-y-5">
+
+               <!-- Présentation de l'outil -->
+               <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+                   <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+                       <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold uppercase tracking-wider">
+                           Affiche Promotionnelle • Sans Photo Individuelle
+                       </span>
+                       <span class="text-xs text-slate-500 font-medium">Format Carré 1080 × 1080 px</span>
+                   </div>
+                   <h2 class="font-display font-extrabold text-lg sm:text-xl text-navyDeep">
+                       Personnalise les textes de mobilisation pour le jeudi soir
+                   </h2>
+                   <p class="text-xs sm:text-sm text-slate-600 mt-1">
+                       Modifie librement chaque zone de texte ci-dessous : l'affiche se met à jour instantanément pour inviter massivement les fidèles et évangélistes à l'appel WhatsApp.
+                   </p>
+               </div>
+
+               <!-- Bloc 1 : Titre principal & Bannière -->
+               <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                   <h3 class="font-display font-bold text-sm sm:text-base text-navyDeep flex items-center gap-2">
+                       <span class="w-6 h-6 rounded-full bg-navyDeep text-ochreBright text-xs flex items-center justify-center font-bold">1</span>
+                       Bannière & Titre d'accroche
+                   </h3>
+
+                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                       <div>
+                           <label for="inputBanner" class="block text-xs font-semibold text-slate-700 mb-1">Bannière dorée supérieure</label>
+                           <input id="inputBanner" type="text" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputHeadline" class="block text-xs font-semibold text-slate-700 mb-1">Grand titre de la soirée</label>
+                           <input id="inputHeadline" type="text" class="w-full px-3.5 py-2 text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                   </div>
+
+                   <div>
+                       <label for="inputSubheadline" class="block text-xs font-semibold text-slate-700 mb-1">Sous-titre d'impact</label>
+                       <input id="inputSubheadline" type="text" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                   </div>
+               </div>
+
+               <!-- Bloc 2 : Informations pratiques (encadré doré) -->
+               <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                   <h3 class="font-display font-bold text-sm sm:text-base text-navyDeep flex items-center gap-2">
+                       <span class="w-6 h-6 rounded-full bg-navyDeep text-ochreBright text-xs flex items-center justify-center font-bold">2</span>
+                       Informations pratiques (Bloc Doré)
+                   </h3>
+
+                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                       <div>
+                           <label for="inputDateTime" class="block text-xs font-semibold text-slate-700 mb-1">Jour & Heure</label>
+                           <input id="inputDateTime" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputChannel" class="block text-xs font-semibold text-slate-700 mb-1">Format / Canal</label>
+                           <input id="inputChannel" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputMobilization" class="block text-xs font-semibold text-slate-700 mb-1">Mobilisation</label>
+                           <input id="inputMobilization" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Bloc 3 : Carte promotionnelle gauche (Points clés de la préparation) -->
+               <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                   <h3 class="font-display font-bold text-sm sm:text-base text-navyDeep flex items-center gap-2">
+                       <span class="w-6 h-6 rounded-full bg-navyDeep text-ochreBright text-xs flex items-center justify-center font-bold">3</span>
+                       Carte Visuelle Gauche (Programme & Équipement)
+                   </h3>
+
+                   <div>
+                       <label for="inputCardTitle" class="block text-xs font-semibold text-slate-700 mb-1">Titre dans le cadre gauche</label>
+                       <input id="inputCardTitle" type="text" class="w-full px-3.5 py-2 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                   </div>
+
+                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                       <div>
+                           <label for="inputPoint1" class="block text-xs font-semibold text-slate-700 mb-1">Axe 1</label>
+                           <input id="inputPoint1" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputPoint2" class="block text-xs font-semibold text-slate-700 mb-1">Axe 2</label>
+                           <input id="inputPoint2" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputPoint3" class="block text-xs font-semibold text-slate-700 mb-1">Axe 3</label>
+                           <input id="inputPoint3" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputPoint4" class="block text-xs font-semibold text-slate-700 mb-1">Axe 4 (Équipement)</label>
+                           <input id="inputPoint4" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Bloc 4 : Bandeau blanc, Verset, Slogan & Logo optionnel -->
+               <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                   <h3 class="font-display font-bold text-sm sm:text-base text-navyDeep flex items-center gap-2">
+                       <span class="w-6 h-6 rounded-full bg-navyDeep text-ochreBright text-xs flex items-center justify-center font-bold">4</span>
+                       Bandeau, Verset, Slogan & Logo CUA
+                   </h3>
+
+                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                       <div>
+                           <label for="inputPillHighlight" class="block text-xs font-semibold text-slate-700 mb-1">Bandeau blanc central</label>
+                           <input id="inputPillHighlight" type="text" class="w-full px-3.5 py-2 text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputTagline" class="block text-xs font-semibold text-slate-700 mb-1">Slogan du bas</label>
+                           <input id="inputTagline" type="text" class="w-full px-3.5 py-2 text-sm font-bold bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                   </div>
+
+                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                       <div class="sm:col-span-2">
+                           <label for="inputVerse" class="block text-xs font-semibold text-slate-700 mb-1">Verset biblique</label>
+                           <input id="inputVerse" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                       <div>
+                           <label for="inputVerseRef" class="block text-xs font-semibold text-slate-700 mb-1">Référence</label>
+                           <input id="inputVerseRef" type="text" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-navyDeep">
+                       </div>
+                   </div>
+
+                   <!-- Option Logo CUA (Bible ouverte intégrée par défaut + import optionnel) -->
+                   <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div>
+                           <p class="text-xs font-bold text-slate-700">Logo du Centre Universitaire Apostolique</p>
+                           <p id="logoStatusLabel" class="text-[11px] text-slate-500">Emblème Bible ouverte CUA intégré (prêt hors-ligne)</p>
+                       </div>
+                       <div class="flex items-center gap-2">
+                           <label for="customLogoInput" class="cursor-pointer px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-navyDeep text-xs font-semibold flex items-center gap-1.5 transition">
+                               <i data-lucide="image-plus" class="w-3.5 h-3.5 text-ochreGold"></i>
+                               <span>Charger logo-cua.png</span>
+                           </label>
+                           <input id="customLogoInput" type="file" accept="image/*" class="hidden">
+                           <button id="useDefaultLogoBtn" type="button" class="hidden px-2.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition">
+                               Logo par défaut
+                           </button>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Boutons d'action principaux -->
+               <div class="flex flex-col sm:flex-row gap-3">
+                   <button id="downloadMainBtn" type="button" class="flex-1 bg-ochreBright hover:bg-amber-400 text-navyDeep font-display font-extrabold text-sm sm:text-base py-4 px-6 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2.5 transition transform active:scale-[0.99]">
+                       <i data-lucide="download" class="w-5 h-5"></i>
+                       Télécharger l'affiche (PNG)
+                   </button>
+                   <button id="copyWhatsappBtn" type="button" class="bg-navyDeep hover:bg-navyMid text-white font-semibold text-sm py-4 px-5 rounded-2xl shadow-md flex items-center justify-center gap-2 transition">
+                       <i data-lucide="copy" class="w-4 h-4 text-ochreBright"></i>
+                       Copier le texte WhatsApp
+                   </button>
+               </div>
+
+           </section>
+
+           <!-- COLONNE DROITE : Aperçu carré 1080x1080 en temps réel (5 colonnes) -->
+           <section class="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-20">
+               <div class="w-full max-w-[460px] flex flex-col items-center">
+                   <div class="w-full flex items-center justify-between mb-2.5 px-1">
+                       <span class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                           Aperçu Affiche (1080×1080)
+                       </span>
+                       <span class="text-[11px] text-slate-400">Mise à jour instantanée</span>
+                   </div>
+
+                   <!-- Conteneur carré 1:1 avec bordure et ombre -->
+                   <div class="w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-navyDeep">
+                       <canvas id="posterCanvas" width="1080" height="1080"></canvas>
+                   </div>
+
+                   <p class="text-xs text-slate-500 text-center mt-3.5 px-3">
+                       Partage cette affiche dans les groupes du CUA et auprès de tes contacts pour mobiliser largement pour la soirée de préparation du jeudi soir.
+                   </p>
+               </div>
+           </section>
+
+       </div>
+   </main>
+
+   <script>
+       // Initialisation des icônes Lucide
+       lucide.createIcons();
+
+       // Texte exact de mobilisation WhatsApp pour la soirée de préparation du jeudi
+       const WHATSAPP_MESSAGE = `*📣 SOIRÉE DE PRÉPARATION — SEMAINE DE L'ÉVANGILE (CUA) 🔥*
+Chers bien-aimés fidèles du CUA, la Semaine de l'Évangile approche à grands pas ! 🌸Pour *que chacun soit prêt, assuré et efficace sur le terrain*, nous vous convions à une grande séance de préparation et d'équipement en ligne (appel  WhatsApp en groupe).🌸
+*🗓 Quand : Jeudi soir, de 20h30 à 22h00*
+*📍 Où : En ligne* ( Appel WhatsApp )
+*🎯 Pourquoi vous ne devez pas manquer ce rendez-vous :*
+* 👉*Maîtriser le plan du salut :* Présenter clairement et simplement le message de Christ aux âmes rencontrées.
+* 👉*Savoir aborder et s'adapter :* Adopter la bonne posture et le bon langage selon chaque profil rencontré afin de capter l'intérêt et toucher les cœurs.
+* 👉*Bien se préparer pour le terrain :* Découvrir les prérequis essentiels pour vivre pleinement cette semaine d'évangélisation.
+* 👉*Solutions claires à vos différentes préoccupations :* Posez vos préoccupations et recevez des réponses claires.
+Que vous soyez déjà habitué aux sorties d'évangélisation, nouvel évangéliste ou membre du CUA désireux d'apporter l'Évangile aux étudiants, cette soirée est pour vous.
+
+*Préparez vos cœurs, vos notes et bloquez votre jeudi de 20h30 à 22h !*`;
+
+       // Valeurs par défaut de l'affiche promotionnelle
+       const DEFAULT_DATA = {
+           banner: "SEMAINE DE L'ÉVANGILE",
+           headline: "SOIRÉE DE PRÉPARATION",
+           subheadline: "POUR ÊTRE PRÊT, ASSURÉ ET EFFICACE SUR LE TERRAIN",
+           dateTime: "Jeudi soir • 20h30 – 22h00",
+           channel: "En ligne • Appel WhatsApp",
+           mobilization: "Anciens & nouveaux • Tous concernés",
+           cardTitle: "AU PROGRAMME DE L'INITIATION",
+           point1: "Maîtriser le plan du salut",
+           point2: "Posture & approche des âmes",
+           point3: "Prérequis & clés du terrain",
+           point4: "Équipement spirituel, physique, moral & mental",
+           pillHighlight: "SPÉCIALE INITIATION ET ÉQUIPEMENT",
+           verse: "« Allez par tout le monde, et prêchez la bonne nouvelle à toute la création. »",
+           verseRef: "— Marc 16:15",
+           tagline: "GAGNER DES ÂMES • ENSEMBLE POUR CHRIST"
+       };
+
+       let posterData = { ...DEFAULT_DATA };
+       let customLogoImg = null;
+
+       const canvas = document.getElementById('posterCanvas');
+       const ctx = canvas.getContext('2d');
+
+       // ==========================================
+       // FONCTIONS UTILITAIRES DE DESSIN CANVAS
+       // ==========================================
+       function roundRectPath(ctx, x, y, w, h, r) {
+           const radius = Math.min(r, w / 2, h / 2);
+           ctx.beginPath();
+           ctx.moveTo(x + radius, y);
+           ctx.lineTo(x + w - radius, y);
+           ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+           ctx.lineTo(x + w, y + h - radius);
+           ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+           ctx.lineTo(x + radius, y + h);
+           ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+           ctx.lineTo(x, y + radius);
+           ctx.quadraticCurveTo(x, y, x + radius, y);
+           ctx.closePath();
+       }
+
+       function drawWrappedLines(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+           const words = (text || '').trim().split(/\s+/).filter(Boolean);
+           if (words.length === 0) return [];
+
+           const lines = [];
+           let currentLine = '';
+
+           for (let i = 0; i < words.length; i++) {
+               const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+               if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+                   lines.push(currentLine);
+                   currentLine = words[i];
+                   if (lines.length >= maxLines) break;
+               } else {
+                   currentLine = testLine;
+               }
+           }
+
+           if (lines.length < maxLines && currentLine) {
+               lines.push(currentLine);
+           }
+
+           lines.forEach((line, idx) => {
+               ctx.fillText(line, x, y + idx * lineHeight, maxWidth);
+           });
+
+           return lines;
+       }
+
+       // Dessine le logo CUA (Bible ouverte + CUA + Centre Universitaire Apostolique)
+       function drawCuaHeaderLogo(ctx, centerX, topY) {
+           const boxW = 360;
+           const boxH = 112;
+           const boxX = centerX - boxW / 2;
+
+           ctx.save();
+           // Ombre douce sous la pastille blanche du logo
+           ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+           ctx.shadowBlur = 16;
+           ctx.shadowOffsetY = 6;
+
+           roundRectPath(ctx, boxX, topY, boxW, boxH, 20);
+           ctx.fillStyle = '#FFFFFF';
+           ctx.fill();
+
+           ctx.shadowColor = 'transparent';
+           ctx.lineWidth = 4;
+           ctx.strokeStyle = '#DF9F28';
+           ctx.stroke();
+
+           if (customLogoImg) {
+               // Rendu d'un logo local chargé par l'utilisateur si fourni
+               const pad = 10;
+               const availW = boxW - pad * 2;
+               const availH = boxH - pad * 2;
+               const ratio = Math.min(availW / customLogoImg.width, availH / customLogoImg.height);
+               const drawW = customLogoImg.width * ratio;
+               const drawH = customLogoImg.height * ratio;
+               ctx.drawImage(
+                   customLogoImg,
+                   centerX - drawW / 2,
+                   topY + (boxH - drawH) / 2,
+                   drawW,
+                   drawH
+               );
+           } else {
+               // Emblème CUA intégré : "CUA" + Bible ouverte stylisée + "Centre Universitaire Apostolique"
+               ctx.fillStyle = '#0B1E44';
+               ctx.font = '900 42px Montserrat, sans-serif';
+               ctx.textAlign = 'center';
+               ctx.textBaseline = 'middle';
+               ctx.fillText('CUA', centerX, topY + 34);
+
+               // Bible ouverte dorée/bleu marine sous CUA
+               const bibleY = topY + 66;
+               ctx.strokeStyle = '#0B1E44';
+               ctx.lineWidth = 3.5;
+               ctx.beginPath();
+               ctx.moveTo(centerX, bibleY + 8);
+               ctx.quadraticCurveTo(centerX - 45, bibleY - 6, centerX - 96, bibleY + 4);
+               ctx.moveTo(centerX, bibleY + 8);
+               ctx.quadraticCurveTo(centerX + 45, bibleY - 6, centerX + 96, bibleY + 4);
+               ctx.stroke();
+
+               ctx.strokeStyle = '#DF9F28';
+               ctx.lineWidth = 2.5;
+               ctx.beginPath();
+               ctx.moveTo(centerX, bibleY + 12);
+               ctx.quadraticCurveTo(centerX - 42, bibleY + 2, centerX - 88, bibleY + 9);
+               ctx.moveTo(centerX, bibleY + 12);
+               ctx.quadraticCurveTo(centerX + 42, bibleY + 2, centerX + 88, bibleY + 9);
+               ctx.stroke();
+
+               // Sous-titre institutionnel
+               ctx.fillStyle = '#091939';
+               ctx.font = '700 16px Inter, sans-serif';
+               ctx.fillText('Centre Universitaire Apostolique', centerX, topY + 95, boxW - 24);
+           }
+
+           ctx.restore();
+       }
+
+       // Dessine une petite icône vectorielle propre dans le bloc doré
+       function drawInfoIcon(ctx, type, cx, cy) {
+           ctx.save();
+           ctx.strokeStyle = '#091939';
+           ctx.fillStyle = '#091939';
+           ctx.lineWidth = 3;
+           ctx.lineCap = 'round';
+           ctx.lineJoin = 'round';
+
+           if (type === 'calendar') {
+               roundRectPath(ctx, cx - 13, cy - 13, 26, 26, 5);
+               ctx.stroke();
+               ctx.beginPath();
+               ctx.moveTo(cx - 13, cy - 4);
+               ctx.lineTo(cx + 13, cy - 4);
+               ctx.moveTo(cx - 6, cy - 16);
+               ctx.lineTo(cx - 6, cy - 10);
+               ctx.moveTo(cx + 6, cy - 16);
+               ctx.lineTo(cx + 6, cy - 10);
+               ctx.stroke();
+           } else if (type === 'phone') {
+               roundRectPath(ctx, cx - 9, cy - 15, 18, 30, 5);
+               ctx.stroke();
+               ctx.beginPath();
+               ctx.arc(cx, cy + 10, 2, 0, Math.PI * 2);
+               ctx.fill();
+           } else {
+               // Icône groupe / mobilisation
+               ctx.beginPath();
+               ctx.arc(cx - 5, cy - 4, 5.5, 0, Math.PI * 2);
+               ctx.arc(cx + 7, cy - 3, 4.5, 0, Math.PI * 2);
+               ctx.moveTo(cx - 14, cy + 12);
+               ctx.quadraticCurveTo(cx - 5, cy + 3, cx + 4, cy + 12);
+               ctx.moveTo(cx + 2, cy + 12);
+               ctx.quadraticCurveTo(cx + 8, cy + 5, cx + 15, cy + 12);
+               ctx.stroke();
+           }
+           ctx.restore();
+       }
+
+       // ==========================================
+       // RENDU COMPLET DE L'AFFICHE 1080x1080
+       // ==========================================
+       function renderPoster() {
+           const W = 1080;
+           const H = 1080;
+
+           ctx.clearRect(0, 0, W, H);
+
+           // 1. Fond bleu nuit profond avec léger dégradé
+           const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+           bgGrad.addColorStop(0, '#091939');
+           bgGrad.addColorStop(0.55, '#0B1E44');
+           bgGrad.addColorStop(1, '#07142E');
+           ctx.fillStyle = bgGrad;
+           ctx.fillRect(0, 0, W, H);
+
+           // 2. Motifs géométriques discrets en arrière-plan
+           ctx.save();
+           ctx.strokeStyle = 'rgba(216, 155, 43, 0.08)';
+           ctx.lineWidth = 2;
+           ctx.beginPath();
+           ctx.arc(190, 220, 260, 0, Math.PI * 2);
+           ctx.stroke();
+
+           ctx.beginPath();
+           ctx.arc(910, 840, 310, 0, Math.PI * 2);
+           ctx.stroke();
+
+           ctx.beginPath();
+           ctx.moveTo(0, 540);
+           ctx.lineTo(1080, 540);
+           ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+           ctx.stroke();
+           ctx.restore();
+
+           // 3. Double bordure dorée extérieure
+           ctx.save();
+           ctx.strokeStyle = '#D89B2B';
+           ctx.lineWidth = 5;
+           roundRectPath(ctx, 24, 24, W - 48, H - 48, 28);
+           ctx.stroke();
+
+           ctx.strokeStyle = 'rgba(223, 159, 40, 0.35)';
+           ctx.lineWidth = 1.5;
+           roundRectPath(ctx, 34, 34, W - 68, H - 68, 22);
+           ctx.stroke();
+           ctx.restore();
+
+           // 4. Logo CUA en haut au centre
+           drawCuaHeaderLogo(ctx, W / 2, 54);
+
+           // 5. Bannière dorée : "SEMAINE DE L'ÉVANGILE"
+           const bannerW = 680;
+           const bannerH = 54;
+           const bannerX = (W - bannerW) / 2;
+           const bannerY = 182;
+
+           ctx.save();
+           roundRectPath(ctx, bannerX, bannerY, bannerW, bannerH, 27);
+           ctx.fillStyle = '#DF9F28';
+           ctx.fill();
+           ctx.lineWidth = 2.5;
+           ctx.strokeStyle = '#FDE68A';
+           ctx.stroke();
+
+           ctx.fillStyle = '#091939';
+           ctx.font = '900 25px Montserrat, sans-serif';
+           ctx.textAlign = 'center';
+           ctx.textBaseline = 'middle';
+           ctx.fillText((posterData.banner || "SEMAINE DE L'ÉVANGILE").toUpperCase(), W / 2, bannerY + bannerH / 2 + 1, bannerW - 40);
+           ctx.restore();
+
+           // 6. Zone centrale : Colonne gauche (Carte promotionnelle sans photo) + Colonne droite (Titre & Infos)
+           const leftX = 68;
+           const leftY = 264;
+           const leftW = 415;
+           const leftH = 505;
+
+           // Cadre promotionnel gauche (remplace l'emplacement photo individuel)
+           ctx.save();
+           roundRectPath(ctx, leftX, leftY, leftW, leftH, 24);
+           ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+           ctx.fill();
+           ctx.lineWidth = 4;
+           ctx.strokeStyle = '#DF9F28';
+           ctx.stroke();
+
+           // Bandeau supérieur interne de la carte gauche
+           roundRectPath(ctx, leftX + 20, leftY + 20, leftW - 40, 56, 14);
+           ctx.fillStyle = 'rgba(223, 159, 40, 0.16)';
+           ctx.fill();
+
+           ctx.fillStyle = '#DF9F28';
+           ctx.font = '800 18px Montserrat, sans-serif';
+           ctx.textAlign = 'center';
+           ctx.textBaseline = 'middle';
+           ctx.fillText((posterData.cardTitle || "AU PROGRAMME DE L'INITIATION").toUpperCase(), leftX + leftW / 2, leftY + 48, leftW - 60);
+
+           // Liste des 4 axes de préparation dans la carte gauche
+           const points = [
+               posterData.point1,
+               posterData.point2,
+               posterData.point3,
+               posterData.point4
+           ].filter(p => p && p.trim().length > 0);
+
+           let currentPointY = leftY + 105;
+           const rowGap = 96;
+
+           points.forEach((pt, idx) => {
+               // Carte de point
+               roundRectPath(ctx, leftX + 20, currentPointY, leftW - 40, 80, 14);
+               ctx.fillStyle = 'rgba(9, 25, 57, 0.72)';
+               ctx.fill();
+               ctx.lineWidth = 1.5;
+               ctx.strokeStyle = 'rgba(223, 159, 40, 0.45)';
+               ctx.stroke();
+
+               // Pastille numérotée dorée
+               ctx.beginPath();
+               ctx.arc(leftX + 52, currentPointY + 40, 18, 0, Math.PI * 2);
+               ctx.fillStyle = '#DF9F28';
+               ctx.fill();
+
+               ctx.fillStyle = '#091939';
+               ctx.font = '900 18px Montserrat, sans-serif';
+               ctx.textAlign = 'center';
+               ctx.textBaseline = 'middle';
+               ctx.fillText(String(idx + 1), leftX + 52, currentPointY + 41);
+
+               // Texte de l'axe
+               ctx.fillStyle = '#FFFFFF';
+               ctx.font = '700 18px Inter, sans-serif';
+               ctx.textAlign = 'left';
+               ctx.textBaseline = 'alphabetic';
+               const textMaxW = leftW - 115;
+               const words = pt.trim().split(/\s+/);
+               let line1 = '';
+               let line2 = '';
+               for (const w of words) {
+                   const test = line1 ? line1 + ' ' + w : w;
+                   if (ctx.measureText(test).width <= textMaxW && !line2) {
+                       line1 = test;
+                   } else {
+                       line2 = line2 ? line2 + ' ' + w : w;
+                   }
+               }
+
+               if (line2) {
+                   ctx.fillText(line1, leftX + 82, currentPointY + 35, textMaxW);
+                   ctx.fillText(line2, leftX + 82, currentPointY + 60, textMaxW);
+               } else {
+                   ctx.fillText(line1, leftX + 82, currentPointY + 46, textMaxW);
+               }
+
+               currentPointY += rowGap;
+           });
+           ctx.restore();
+
+           // Colonne droite : Grand Titre + Sous-titre + Encadré Doré d'Infos
+           const rightX = 512;
+           const rightW = 500;
+           const rightCenterX = rightX + rightW / 2;
+
+           ctx.save();
+           ctx.textAlign = 'center';
+           ctx.fillStyle = '#DF9F28';
+           ctx.font = '900 46px Montserrat, sans-serif';
+           const headlineLines = drawWrappedLines(
+               ctx,
+               (posterData.headline || "SOIRÉE DE PRÉPARATION").toUpperCase(),
+               rightCenterX,
+               306,
+               rightW,
+               52,
+               2
+           );
+
+           const afterHeadlineY = 306 + headlineLines.length * 52 + 8;
+
+           // Filet doré décoratif
+           ctx.strokeStyle = '#DF9F28';
+           ctx.lineWidth = 3;
+           ctx.beginPath();
+           ctx.moveTo(rightCenterX - 110, afterHeadlineY);
+           ctx.lineTo(rightCenterX + 110, afterHeadlineY);
+           ctx.stroke();
+
+           // Sous-titre
+           ctx.fillStyle = '#FFFFFF';
+           ctx.font = '800 21px Montserrat, sans-serif';
+           const subLines = drawWrappedLines(
+               ctx,
+               (posterData.subheadline || "").toUpperCase(),
+               rightCenterX,
+               afterHeadlineY + 30,
+               rightW,
+               28,
+               2
+           );
+
+           // Encadré doré des informations pratiques
+           const infoBoxY = Math.max(468, afterHeadlineY + 30 + subLines.length * 28 + 14);
+           const infoBoxH = leftY + leftH - infoBoxY;
+
+           roundRectPath(ctx, rightX, infoBoxY, rightW, infoBoxH, 22);
+           ctx.fillStyle = '#DF9F28';
+           ctx.fill();
+           ctx.lineWidth = 2.5;
+           ctx.strokeStyle = '#FDE68A';
+           ctx.stroke();
+
+           const infoRows = [
+               { icon: 'calendar', text: posterData.dateTime || '' },
+               { icon: 'phone', text: posterData.channel || '' },
+               { icon: 'users', text: posterData.mobilization || '' }
+           ];
+
+           const slotH = infoBoxH / infoRows.length;
+           infoRows.forEach((row, index) => {
+               const rowCenterY = infoBoxY + slotH * (index + 0.5);
+
+               if (index > 0) {
+                   ctx.strokeStyle = 'rgba(9, 25, 57, 0.22)';
+                   ctx.lineWidth = 1.5;
+                   ctx.beginPath();
+                   ctx.moveTo(rightX + 24, infoBoxY + slotH * index);
+                   ctx.lineTo(rightX + rightW - 24, infoBoxY + slotH * index);
+                   ctx.stroke();
+               }
+
+               drawInfoIcon(ctx, row.icon, rightX + 42, rowCenterY);
+
+               ctx.fillStyle = '#091939';
+               ctx.font = '800 22px Inter, sans-serif';
+               ctx.textAlign = 'left';
+               ctx.textBaseline = 'middle';
+               ctx.fillText(row.text, rightX + 70, rowCenterY, rightW - 92);
+           });
+           ctx.restore();
+
+           // 7. Bandeau blanc à bordure dorée : "SPÉCIALE INITIATION ET ÉQUIPEMENT"
+           const pillW = 790;
+           const pillH = 60;
+           const pillX = (W - pillW) / 2;
+           const pillY = 796;
+
+           ctx.save();
+           roundRectPath(ctx, pillX, pillY, pillW, pillH, 30);
+           ctx.fillStyle = '#FFFFFF';
+           ctx.fill();
+           ctx.lineWidth = 4;
+           ctx.strokeStyle = '#DF9F28';
+           ctx.stroke();
+
+           ctx.fillStyle = '#091939';
+           ctx.font = '900 25px Montserrat, sans-serif';
+           ctx.textAlign = 'center';
+           ctx.textBaseline = 'middle';
+           ctx.fillText((posterData.pillHighlight || "SPÉCIALE INITIATION ET ÉQUIPEMENT").toUpperCase(), W / 2, pillY + pillH / 2 + 1, pillW - 50);
+           ctx.restore();
+
+           // 8. Verset biblique
+           ctx.save();
+           ctx.textAlign = 'center';
+           ctx.textBaseline = 'alphabetic';
+           ctx.fillStyle = '#F8FAFC';
+           ctx.font = 'italic 600 23px "Playfair Display", Georgia, serif';
+           const verseLines = drawWrappedLines(ctx, posterData.verse || '', W / 2, 892, 920, 30, 2);
+
+           ctx.fillStyle = '#DF9F28';
+           ctx.font = '700 20px Inter, sans-serif';
+           const refY = 892 + Math.max(1, verseLines.length) * 30 + 4;
+           ctx.fillText(posterData.verseRef || '', W / 2, refY, 900);
+           ctx.restore();
+
+           // 9. Slogan du bas
+           ctx.save();
+           ctx.textAlign = 'center';
+           ctx.fillStyle = '#DF9F28';
+           ctx.font = '900 25px Montserrat, sans-serif';
+           ctx.fillText((posterData.tagline || "GAGNER DES ÂMES • ENSEMBLE POUR CHRIST").toUpperCase(), W / 2, 1024, 980);
+           ctx.restore();
+       }
+
+       // ==========================================
+       // SYNCHRONISATION FORMULAIRE & ACTIONS
+       // ==========================================
+       const fieldMap = {
+           inputBanner: 'banner',
+           inputHeadline: 'headline',
+           inputSubheadline: 'subheadline',
+           inputDateTime: 'dateTime',
+           inputChannel: 'channel',
+           inputMobilization: 'mobilization',
+           inputCardTitle: 'cardTitle',
+           inputPoint1: 'point1',
+           inputPoint2: 'point2',
+           inputPoint3: 'point3',
+           inputPoint4: 'point4',
+           inputPillHighlight: 'pillHighlight',
+           inputVerse: 'verse',
+           inputVerseRef: 'verseRef',
+           inputTagline: 'tagline'
+       };
+
+       function populateInputs() {
+           Object.entries(fieldMap).forEach(([inputId, key]) => {
+               const el = document.getElementById(inputId);
+               if (el) el.value = posterData[key];
+           });
+       }
+
+       Object.entries(fieldMap).forEach(([inputId, key]) => {
+           const el = document.getElementById(inputId);
+           if (!el) return;
+           el.addEventListener('input', (e) => {
+               posterData[key] = e.target.value;
+               renderPoster();
+           });
+       });
+
+       let toastTimer = null;
+       function showToast(message) {
+           const box = document.getElementById('toastBox');
+           const txt = document.getElementById('toastText');
+           txt.textContent = message;
+           box.classList.remove('hidden');
+           clearTimeout(toastTimer);
+           toastTimer = setTimeout(() => {
+               box.classList.add('hidden');
+           }, 3000);
+       }
+
+       function downloadPng() {
+           renderPoster();
+           const link = document.createElement('a');
+           link.download = 'affiche-soiree-preparation-jeudi-cua.png';
+           link.href = canvas.toDataURL('image/png', 1.0);
+           document.body.appendChild(link);
+           link.click();
+           document.body.removeChild(link);
+           showToast("Affiche PNG 1080×1080 téléchargée !");
+       }
+
+       function copyWhatsappText() {
+           try {
+               const tempArea = document.createElement('textarea');
+               tempArea.value = WHATSAPP_MESSAGE;
+               tempArea.setAttribute('readonly', '');
+               tempArea.style.position = 'absolute';
+               tempArea.style.left = '-9999px';
+               document.body.appendChild(tempArea);
+               tempArea.select();
+               document.execCommand('copy');
+               document.body.removeChild(tempArea);
+               showToast("Texte de mobilisation copié pour WhatsApp !");
+           } catch (err) {
+               showToast("Impossible de copier automatiquement le texte.");
+           }
+       }
+
+       // Chargement d'un logo personnalisé local (ex: logo-cua.png)
+       document.getElementById('customLogoInput').addEventListener('change', (e) => {
+           const file = e.target.files[0];
+           if (!file) return;
+           const reader = new FileReader();
+           reader.onload = (ev) => {
+               const img = new Image();
+               img.onload = () => {
+                   customLogoImg = img;
+                   document.getElementById('logoStatusLabel').textContent = `Logo chargé : ${file.name}`;
+                   document.getElementById('useDefaultLogoBtn').classList.remove('hidden');
+                   renderPoster();
+                   showToast("Logo CUA mis à jour sur l'affiche !");
+               };
+               img.src = ev.target.result;
+           };
+           reader.readAsDataURL(file);
+       });
+
+       document.getElementById('useDefaultLogoBtn').addEventListener('click', () => {
+           customLogoImg = null;
+           document.getElementById('customLogoInput').value = '';
+           document.getElementById('logoStatusLabel').textContent = "Emblème Bible ouverte CUA intégré (prêt hors-ligne)";
+           document.getElementById('useDefaultLogoBtn').classList.add('hidden');
+           renderPoster();
+           showToast("Emblème CUA par défaut rétabli.");
+       });
+
+       document.getElementById('resetAllBtn').addEventListener('click', () => {
+           posterData = { ...DEFAULT_DATA };
+           customLogoImg = null;
+           document.getElementById('customLogoInput').value = '';
+           document.getElementById('logoStatusLabel').textContent = "Emblème Bible ouverte CUA intégré (prêt hors-ligne)";
+           document.getElementById('useDefaultLogoBtn').classList.add('hidden');
+           populateInputs();
+           renderPoster();
+           showToast("Tous les textes ont été réinitialisés.");
+       });
+
+       document.getElementById('downloadHeaderBtn').addEventListener('click', downloadPng);
+       document.getElementById('downloadMainBtn').addEventListener('click', downloadPng);
+       document.getElementById('copyWhatsappBtn').addEventListener('click', copyWhatsappText);
+
+       window.addEventListener('load', () => {
+           populateInputs();
+           if (document.fonts && document.fonts.ready) {
+               document.fonts.ready.then(renderPoster);
+           } else {
+               renderPoster();
+           }
+       });
+   </script>
+</body>
+</html>
